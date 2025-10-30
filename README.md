@@ -6,9 +6,12 @@
 
 #define TAMANHO_TABULEIRO 8
 
+// Tabuleiro do jogo: cada casa tem um ninja!
+// Maiúsculas = Vilarejo da Folha (atacantes)
+// Minúsculas = Vilarejo da Areia (defensores)
 char tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO] = {
-    {'K', 'S', 'U', 'H', 'N', 'U', 'S', 'K'},
-    {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+    {'K', 'S', 'U', 'H', 'N', 'U', 'S', 'K'}, // Kakashi, Shikamaru, Sasuke, Hinata, Naruto...
+    {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'}, // Genins
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
@@ -17,37 +20,46 @@ char tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO] = {
     {'k', 's', 'u', 'h', 'n', 'u', 's', 'k'}
 };
 
+// --- FUNÇÕES QUE "PENSAM" COMO UM NINJA ---
+
+// 🧱 Kakashi (Torre) só anda em linha reta — como um relâmpago reto!
 bool kakashi_pode_mover(int de_lin, int de_col, int para_lin, int para_col) {
+    // Só pode ir pra frente, trás, esquerda ou direita — nunca na diagonal!
     if (de_lin != para_lin && de_col != para_col) {
-        return false;
+        return false; // "Não, isso não é meu estilo."
     }
 
+    // Vamos andar passo a passo e ver se tem alguém no caminho?
     if (de_lin == para_lin) {
+        // Movendo na horizontal (mesma linha)
         int passo = (para_col > de_col) ? 1 : -1;
         for (int col = de_col + passo; col != para_col; col += passo) {
             if (tabuleiro[de_lin][col] != ' ') {
-                return false;
+                return false; // Tem um inimigo ou aliado no caminho!
             }
         }
     } else {
+        // Movendo na vertical (mesma coluna)
         int passo = (para_lin > de_lin) ? 1 : -1;
         int linha = de_lin + passo;
-        while (linha != para_lin) {
+        while (linha != para_lin) { // Usando while, como um shinobi paciente
             if (tabuleiro[linha][de_col] != ' ') {
                 return false;
             }
             linha += passo;
         }
     }
-    return true;
+    return true; // "Missão cumprida!"
 }
 
+// 🔥 Sasuke (Bispo) corre pelas diagonais — como o Chidori!
 bool sasuke_pode_mover(int de_lin, int de_col, int para_lin, int para_col) {
     int dif_lin = para_lin - de_lin;
     int dif_col = para_col - de_col;
 
+    // Só pode ir em diagonal perfeita
     if (abs(dif_lin) != abs(dif_col)) {
-        return false;
+        return false; // "Esse movimento é fraco."
     }
 
     int passos = abs(dif_lin);
@@ -58,38 +70,46 @@ bool sasuke_pode_mover(int de_lin, int de_col, int para_lin, int para_col) {
     int c = de_col + dir_col;
     int contador = 1;
 
+    // Usando do-while: pelo menos um passo ele dá!
     do {
         if (tabuleiro[l][c] != ' ') {
-            return false;
+            return false; // Alguém está no caminho do meu poder!
         }
         l += dir_lin;
         c += dir_col;
         contador++;
     } while (contador < passos);
 
-    return true;
+    return true; // "Meu caminho está livre."
 }
 
+// 💖 Hinata (Rainha) combina o poder de todos — ela é completa!
 bool hinata_pode_mover(int de_lin, int de_col, int para_lin, int para_col) {
+    // Ela pode se mover como Kakashi OU como Sasuke
     return kakashi_pode_mover(de_lin, de_col, para_lin, para_col) ||
            sasuke_pode_mover(de_lin, de_col, para_lin, para_col);
 }
 
+// 🦌 Shikamaru (Cavalo) pula como um veado — em "L", sem se importar com obstáculos!
 bool shikamaru_pode_mover(int de_lin, int de_col, int para_lin, int para_col) {
+    // Os 8 jeitos que um cavalo pode pular (movimento em "L")
     int possibilidades_linha[8] = { -2, -2, -1, -1,  1,  1,  2,  2 };
     int possibilidades_coluna[8] = { -1,  1, -2,  2, -2,  2, -1,  1 };
 
+    // Testamos cada uma das 8 opções (loop simples, mas representa múltiplas direções)
     for (int i = 0; i < 8; i++) {
         int nova_linha = de_lin + possibilidades_linha[i];
         int nova_coluna = de_col + possibilidades_coluna[i];
 
+        // Se alguma delas bate com o destino...
         if (nova_linha == para_lin && nova_coluna == para_col) {
-            return true;
+            return true; // "Que preguiça... mas tá certo."
         }
     }
-    return false;
+    return false; // "Isso não é movimento de cavalo."
 }
 
+// 🌸 Função que mostra o tabuleiro com carinho
 void mostrar_tabuleiro_com_amor() {
     printf("\n   a   b   c   d   e   f   g   h\n");
     for (int linha = 0; linha < TAMANHO_TABULEIRO; linha++) {
@@ -106,112 +126,48 @@ void mostrar_tabuleiro_com_amor() {
     printf("Legenda:\n");
     printf("N/n = Naruto (Rei)     H/h = Hinata (Rainha)\n");
     printf("K/k = Kakashi (Torre)  U/u = Sasuke (Bispo)\n");
-    printf("S/s = Shikamaru (Cavalo)  G/g = Genin (Peao)\n\n");
+    printf("S/s = Shikamaru (Cavalo)  G/g = Genin (Peão)\n\n");
 }
 
-void menu_principal() {
-    printf("\n");
-    printf("╔══════════════════════════════════════════╗\n");
-    printf("║                                          ║\n");
-    printf("║     🍥  XADREZ NINJA - NARUTO  🍥        ║\n");
-    printf("║                                          ║\n");
-    printf("║   Folha vs Areia - Quem sera Hokage?    ║\n");
-    printf("║                                          ║\n");
-    printf("╚══════════════════════════════════════════╝\n");
-    printf("\n");
-    printf("   [1] Começar o Jogo\n");
-    printf("   [2] Ver Regras\n");
-    printf("   [3] Sair\n");
-    printf("\n");
-    printf("Escolha uma opção: ");
-}
-
-void mostrar_regras() {
-    printf("\n╔══════════════════════════════════════════╗\n");
-    printf("║           REGRAS DO JOGO                 ║\n");
-    printf("╚══════════════════════════════════════════╝\n\n");
-    printf("Peças e Movimentos:\n\n");
-    printf("🔸 KAKASHI (K/k) - Torre\n");
-    printf("   Move-se em linha reta (horizontal/vertical)\n\n");
-    printf("🔸 SASUKE (U/u) - Bispo\n");
-    printf("   Move-se em diagonais\n\n");
-    printf("🔸 HINATA (H/h) - Rainha\n");
-    printf("   Combina movimentos de Torre e Bispo\n\n");
-    printf("🔸 SHIKAMARU (S/s) - Cavalo\n");
-    printf("   Move-se em 'L' (pode pular peças)\n\n");
-    printf("🔸 NARUTO (N/n) - Rei\n");
-    printf("   Move-se uma casa em qualquer direção\n\n");
-    printf("🔸 GENIN (G/g) - Peão\n");
-    printf("   Move-se uma casa para frente\n\n");
-    printf("Maiúsculas = Vilarejo da Folha\n");
-    printf("Minúsculas = Vilarejo da Areia\n\n");
-    printf("Pressione Enter para voltar...");
-    getchar();
-}
-
-void executar_demonstracao() {
-    printf("\n~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~\n");
-    printf("   DEMONSTRAÇÃO DOS MOVIMENTOS\n");
+// 🎌 Função principal — onde a história começa
+int main() {
+    printf("~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~\n");
+    printf("   BEM-VINDO AO XADREZ NINJA! 🍥\n");
+    printf("   Folha vs Areia — Quem será Hokage?\n");
     printf("~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~\n");
 
     mostrar_tabuleiro_com_amor();
 
     printf("Vamos testar se os ninjas podem se mover corretamente...\n\n");
 
+    // Teste 1: Kakashi tenta ir de a8 para a5 (vertical livre)
     if (kakashi_pode_mover(0, 0, 3, 0)) {
-        printf("✅ Kakashi: \"Posso ir de a8 para a5. Meu caminho esta limpo.\"\n");
+        printf("✅ Kakashi: \"Posso ir de a8 para a5. Meu caminho está limpo.\"\n");
     } else {
-        printf("❌ Kakashi: \"Alguem esta no meu caminho.\"\n");
+        printf("❌ Kakashi: \"Alguém está no meu caminho.\"\n");
     }
 
+    // Teste 2: Sasuke de c8 para f5 (diagonal livre)
     if (sasuke_pode_mover(0, 2, 3, 5)) {
-        printf("✅ Sasuke: \"Minha diagonal esta livre. Vou avancar.\"\n");
+        printf("✅ Sasuke: \"Minha diagonal está livre. Vou avançar.\"\n");
     } else {
-        printf("❌ Sasuke: \"Ha um obstaculo. Nao posso passar.\"\n");
+        printf("❌ Sasuke: \"Há um obstáculo. Não posso passar.\"\n");
     }
 
+    // Teste 3: Hinata de d8 para f6
     if (hinata_pode_mover(0, 3, 2, 5)) {
-        printf("✅ Hinata: \"Meu Byakugan ve o caminho. Posso ir!\"\n");
+        printf("✅ Hinata: \"Meu Byakugan vê o caminho. Posso ir!\"\n");
     } else {
-        printf("❌ Hinata: \"Nao consigo avancar...\"\n");
+        printf("❌ Hinata: \"Não consigo avançar...\"\n");
     }
 
+    // Teste 4: Shikamaru de b8 para c6 (movimento em L clássico)
     if (shikamaru_pode_mover(0, 1, 2, 2)) {
-        printf("✅ Shikamaru: \"Que preguica... mas sim, posso pular para c6.\"\n");
+        printf("✅ Shikamaru: \"Que preguiça... mas sim, posso pular para c6.\"\n");
     } else {
-        printf("❌ Shikamaru: \"Isso da muito trabalho. Nao e um L valido.\"\n");
+        printf("❌ Shikamaru: \"Isso dá muito trabalho. Não é um L válido.\"\n");
     }
 
-    printf("\n✨ Demonstração concluída! ✨\n");
-    printf("\nPressione Enter para continuar...");
-    getchar();
-}
-
-int main() {
-    int opcao;
-    char buffer[100];
-
-    while (1) {
-        menu_principal();
-        
-        if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
-            opcao = atoi(buffer);
-            
-            if (opcao == 1) {
-                executar_demonstracao();
-            } else if (opcao == 2) {
-                mostrar_regras();
-            } else if (opcao == 3) {
-                printf("\n✨ Que a paz reine entre as vilas! ✨\n");
-                printf("Ate logo, ninja! 🍥\n\n");
-                break;
-            } else {
-                printf("\nOpcao invalida! Tente novamente.\n");
-                printf("Pressione Enter para continuar...");
-                getchar();
-            }
-        }
-    }
-
+    printf("\n✨ Que a paz reine entre as vilas! ✨\n");
     return 0;
 }
